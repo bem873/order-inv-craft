@@ -1,0 +1,51 @@
+#%RAML 1.0
+title: Accelerator SAP S/4HANA Inventory System API
+description: System API for working with Inventory information in SAP.
+version: v1
+mediaType: application/json
+
+uses: 
+  GlobalResources: ./exchange_modules/org.mule.examples/accelerator-global-resources/2.2.0/accelerator-global-resources.raml
+  InventoryTypes: ./exchange_modules/org.mule.examples/accelerator-cim-produce-library/1.3.0/libraries/InventoryProductTypeLibrary.raml
+
+securedBy: [ GlobalResources.BasicAuth ]
+
+/ping:
+  get:
+    is: [ GlobalResources.PingResponse ]
+    description: Get the current health status of this API.
+
+/inventory:
+  description: Base resource representing Inventory Information.
+  get:
+    description: Find one or more inventory information from SAP based on the Product or Location or for a given time window.
+    is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable, GlobalResources.Pageable ]
+    queryParameters:
+      productId?:
+        type: string
+        description: Lookup by Product Id
+      locationId?:
+        type: string
+        description: Lookup by Location Id
+      fromDate?:
+        type: datetime
+        description: Include only Inventory created or updated on or after this date and time
+      toDate?:
+        type: datetime
+        description: Include only Inventory created or updated on or before this date and time
+    responses:
+      200:
+        body:
+          application/json:
+            type: InventoryTypes.ProductAvailability[]
+
+  /{productId}:
+    get:
+      is: [ GlobalResources.ErrorResponses, GlobalResources.Trackable ]
+      description: Return details for an existing Inventory for given product Id.
+      responses:
+        200:
+          body:
+            application/json:
+              type: InventoryTypes.ProductAvailability[]
+   
